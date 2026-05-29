@@ -28,6 +28,7 @@ import {
   WorkspaceDiffSurface,
   workspacePrismTheme,
 } from './WorkspaceCodeSurface'
+import { WorkspaceFileOpenWith } from './WorkspaceFileOpenWith'
 
 type WorkspacePanelProps = {
   sessionId: string
@@ -1501,6 +1502,10 @@ export function WorkspacePanel({ sessionId }: WorkspacePanelProps) {
             <span aria-hidden="true" className="material-symbols-outlined text-[14px] text-[var(--color-text-tertiary)]">file_copy</span>
             <span>{t('workspace.copyAbsolutePath')}</span>
           </button>
+          <WorkspaceFileOpenWith
+            absolutePath={resolveWorkspaceAttachmentPath(status?.workDir, fileContextMenu.path)}
+            onAfterSelect={() => setFileContextMenu(null)}
+          />
         </div>
       )}
     </aside>
