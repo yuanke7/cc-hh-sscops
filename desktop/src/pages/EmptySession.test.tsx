@@ -110,13 +110,23 @@ vi.mock('../components/controls/PermissionModeSelector', () => ({
   ),
 }))
 
-vi.mock('../components/controls/ModelSelector', () => ({
-  ModelSelector: ({ compact }: { compact?: boolean }) => (
-    <button type="button" data-testid="model-selector" data-compact={compact ? 'true' : 'false'}>
-      Model
-    </button>
-  ),
-}))
+vi.mock('../components/controls/ModelSelector', async () => {
+  const React = await vi.importActual<typeof import('react')>('react')
+  return {
+    ModelSelector: React.forwardRef<{ open: () => void }, { compact?: boolean }>(({ compact }, ref) => {
+      const [open, setOpen] = React.useState(false)
+      React.useImperativeHandle(ref, () => ({ open: () => setOpen(true) }), [])
+      return (
+        <>
+          <button type="button" data-testid="model-selector" data-compact={compact ? 'true' : 'false'}>
+            Model
+          </button>
+          {open && <div data-testid="model-selector-dropdown">Model selector opened</div>}
+        </>
+      )
+    }),
+  }
+})
 
 import { EmptySession } from './EmptySession'
 import { ApiError } from '../api/client'
@@ -351,6 +361,29 @@ describe('EmptySession', () => {
     fireEvent.click(agentOption)
 
     expect(input).toHaveValue('/agent debugger ')
+  })
+
+  it('opens the draft model selector for /model without creating or sending a session', async () => {
+    useSettingsStore.setState({
+      chatSendBehavior: 'enter',
+    })
+
+    render(<EmptySession />)
+
+    const input = screen.getByRole('textbox') as HTMLTextAreaElement
+    fireEvent.change(input, {
+      target: {
+        value: '/model',
+        selectionStart: 6,
+      },
+    })
+
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    expect(mocks.createSession).not.toHaveBeenCalled()
+    expect(mocks.wsSend).not.toHaveBeenCalled()
+    expect(await screen.findByTestId('model-selector-dropdown')).toHaveTextContent('Model selector opened')
+    expect(input).toHaveValue('')
   })
 
   it('selects a highlighted agent entry from /agent without creating a session', async () => {

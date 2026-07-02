@@ -69,9 +69,21 @@ vi.mock('../controls/PermissionModeSelector', () => ({
   PermissionModeSelector: () => <button type="button">Permissions</button>,
 }))
 
-vi.mock('../controls/ModelSelector', () => ({
-  ModelSelector: () => <button type="button">Model</button>,
-}))
+vi.mock('../controls/ModelSelector', async () => {
+  const React = await vi.importActual<typeof import('react')>('react')
+  return {
+    ModelSelector: React.forwardRef<{ open: () => void }, Record<string, never>>((_props, ref) => {
+      const [open, setOpen] = React.useState(false)
+      React.useImperativeHandle(ref, () => ({ open: () => setOpen(true) }), [])
+      return (
+        <>
+          <button type="button">Model</button>
+          {open && <div data-testid="model-selector-dropdown">Model selector opened</div>}
+        </>
+      )
+    }),
+  }
+})
 
 import { ChatInput } from './ChatInput'
 import { useChatStore } from '../../stores/chatStore'
@@ -1333,6 +1345,32 @@ describe('ChatInput file mentions', () => {
       content: 'avoid accidental sends',
       attachments: [],
     })
+  })
+
+  it('opens the model selector for /model without sending a user message', async () => {
+    useSettingsStore.setState({
+      chatSendBehavior: 'enter',
+    })
+
+    render(<ChatInput />)
+
+    await waitFor(() => {
+      expect(mocks.getGitInfo).toHaveBeenCalledWith(sessionId)
+    })
+
+    const input = screen.getByRole('textbox') as HTMLTextAreaElement
+    fireEvent.change(input, {
+      target: {
+        value: '/model',
+        selectionStart: 6,
+      },
+    })
+
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    expect(mocks.wsSend).not.toHaveBeenCalled()
+    expect(await screen.findByTestId('model-selector-dropdown')).toHaveTextContent('Model selector opened')
+    expect(input).toHaveValue('')
   })
 
   it('prioritizes active-session slash commands by command name when filtering', async () => {

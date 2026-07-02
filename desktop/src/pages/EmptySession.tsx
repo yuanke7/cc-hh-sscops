@@ -12,7 +12,7 @@ import { useUIStore } from '../stores/uiStore'
 import { SETTINGS_TAB_ID, useTabStore } from '../stores/tabStore'
 import { RepositoryLaunchControls } from '../components/shared/RepositoryLaunchControls'
 import { PermissionModeSelector } from '../components/controls/PermissionModeSelector'
-import { ModelSelector } from '../components/controls/ModelSelector'
+import { ModelSelector, type ModelSelectorHandle } from '../components/controls/ModelSelector'
 import { AttachmentGallery } from '../components/chat/AttachmentGallery'
 import { ComposerDropOverlay } from '../components/chat/ComposerDropOverlay'
 import { ContextUsageIndicator } from '../components/chat/ContextUsageIndicator'
@@ -105,6 +105,7 @@ export function EmptySession() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const modelSelectorRef = useRef<ModelSelectorHandle>(null)
   const plusMenuRef = useRef<HTMLDivElement>(null)
   const slashMenuRef = useRef<HTMLDivElement>(null)
   const fileSearchRef = useRef<FileSearchMenuHandle>(null)
@@ -296,6 +297,15 @@ export function EmptySession() {
     if (slashUiAction?.type === 'settings') {
       useUIStore.getState().setPendingSettingsTab(slashUiAction.tab)
       useTabStore.getState().openTab(SETTINGS_TAB_ID, 'Settings', 'settings')
+      setInput('')
+      setSlashMenuOpen(false)
+      setFileSearchOpen(false)
+      setPlusMenuOpen(false)
+      return
+    }
+
+    if (slashUiAction?.type === 'model') {
+      modelSelectorRef.current?.open()
       setInput('')
       setSlashMenuOpen(false)
       setFileSearchOpen(false)
@@ -784,7 +794,7 @@ export function EmptySession() {
                     draft
                     compact={isMobileComposer}
                   />
-                  <ModelSelector runtimeKey={DRAFT_RUNTIME_SELECTION_KEY} disabled={isSubmitting} compact={isMobileComposer} />
+                  <ModelSelector ref={modelSelectorRef} runtimeKey={DRAFT_RUNTIME_SELECTION_KEY} disabled={isSubmitting} compact={isMobileComposer} />
                   <button
                     onClick={handleSubmit}
                     disabled={!canSubmit}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { OFFICIAL_DEFAULT_MODEL_ID, OFFICIAL_MODELS } from '../../constants/modelCatalog'
 import {
@@ -35,6 +35,10 @@ type Props = {
   runtimeKey?: string
   disabled?: boolean
   compact?: boolean
+}
+
+export type ModelSelectorHandle = {
+  open: () => void
 }
 
 type DropdownPosition = {
@@ -164,7 +168,7 @@ function resolveDefaultRuntimeSelection(
   }
 }
 
-export function ModelSelector({
+export const ModelSelector = forwardRef<ModelSelectorHandle, Props>(function ModelSelector({
   value,
   onChange,
   runtimeSelection: controlledRuntimeSelection,
@@ -172,7 +176,7 @@ export function ModelSelector({
   runtimeKey,
   disabled = false,
   compact = false,
-}: Props = {}) {
+}: Props = {}, selectorRef) {
   const t = useTranslation()
   const isMobileBrowser = useMobileViewport() && !isDesktopRuntime()
   const {
@@ -227,6 +231,14 @@ export function ModelSelector({
     void fetchClaudeOAuthStatus()
     void fetchOpenAIOAuthStatus()
   }, [fetchClaudeOAuthStatus, fetchOpenAIOAuthStatus, isRuntimeScoped, open])
+
+  const openSelector = useCallback(() => {
+    if (!disabled) setOpen(true)
+  }, [disabled])
+
+  useImperativeHandle(selectorRef, () => ({
+    open: openSelector,
+  }), [openSelector])
 
   useEffect(() => {
     if (!open) return
@@ -587,4 +599,4 @@ export function ModelSelector({
       {dropdown}
     </div>
   )
-}
+})

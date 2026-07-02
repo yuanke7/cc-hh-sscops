@@ -15,7 +15,7 @@ import {
 import { sessionsApi, type SessionGitInfo } from '../../api/sessions'
 import { agentsApi } from '../../api/agents'
 import { PermissionModeSelector } from '../controls/PermissionModeSelector'
-import { ModelSelector } from '../controls/ModelSelector'
+import { ModelSelector, type ModelSelectorHandle } from '../controls/ModelSelector'
 import type { AttachmentRef } from '../../types/chat'
 import { AttachmentGallery } from './AttachmentGallery'
 import { ComposerDropOverlay } from './ComposerDropOverlay'
@@ -109,6 +109,7 @@ export function ChatInput({ variant = 'default', compact = false }: ChatInputPro
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const modelSelectorRef = useRef<ModelSelectorHandle>(null)
   const plusMenuRef = useRef<HTMLDivElement>(null)
   const slashMenuRef = useRef<HTMLDivElement>(null)
   const fileSearchRef = useRef<FileSearchMenuHandle>(null)
@@ -621,6 +622,15 @@ export function ChatInput({ variant = 'default', compact = false }: ChatInputPro
     if (pendingSlashUiAction?.type === 'settings') {
       useUIStore.getState().setPendingSettingsTab(pendingSlashUiAction.tab)
       useTabStore.getState().openTab(SETTINGS_TAB_ID, 'Settings', 'settings')
+      setComposerInput('')
+      setSlashMenuOpen(false)
+      setFileSearchOpen(false)
+      setPlusMenuOpen(false)
+      return
+    }
+
+    if (pendingSlashUiAction?.type === 'model') {
+      modelSelectorRef.current?.open()
       setComposerInput('')
       setSlashMenuOpen(false)
       setFileSearchOpen(false)
@@ -1296,7 +1306,7 @@ export function ChatInput({ variant = 'default', compact = false }: ChatInputPro
                 />
               )}
               {!isMemberSession && activeTabId && (
-                <ModelSelector runtimeKey={activeTabId} disabled={isActive} compact={useCompactControls} />
+                <ModelSelector ref={modelSelectorRef} runtimeKey={activeTabId} disabled={isActive} compact={useCompactControls} />
               )}
               <button
                 onClick={!isMemberSession && isActive ? () => stopGeneration(activeTabId!) : handleSubmit}
