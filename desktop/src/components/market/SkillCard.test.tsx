@@ -81,4 +81,43 @@ describe('SkillCard', () => {
     expect(screen.getByTestId('security-badge-flagged')).toBeInTheDocument()
     expect(screen.getByText('Flagged')).toBeInTheDocument()
   })
+
+  it('hides the redundant installable badge when the quick-install button is shown', () => {
+    render(<SkillCard skill={makeSkill()} onOpen={vi.fn()} onInstall={vi.fn()} />)
+
+    expect(screen.getByText('Install')).toBeInTheDocument()
+    expect(screen.queryByTestId('install-badge-installable')).not.toBeInTheDocument()
+  })
+
+  it('renders a deterministic letter avatar when iconUrl is missing', () => {
+    render(<SkillCard skill={makeSkill()} onOpen={vi.fn()} />)
+
+    const avatar = screen.getByTestId('skill-avatar-fallback')
+    expect(avatar).toHaveTextContent('D')
+    const background = avatar.style.background
+
+    // Same name → same identity color on re-render.
+    render(<SkillCard skill={makeSkill({ id: 'clawhub:demo-2' })} onOpen={vi.fn()} />)
+    const second = screen.getAllByTestId('skill-avatar-fallback')[1]!
+    expect(second.style.background).toBe(background)
+  })
+
+  it('renders the icon image when iconUrl is provided', () => {
+    const { container } = render(
+      <SkillCard skill={makeSkill({ iconUrl: 'https://example.com/icon.png' })} onOpen={vi.fn()} />,
+    )
+
+    const img = container.querySelector('img')
+    expect(img).toHaveAttribute('src', 'https://example.com/icon.png')
+    expect(screen.queryByTestId('skill-avatar-fallback')).not.toBeInTheDocument()
+  })
+
+  it('explains the security status via tooltip', () => {
+    render(<SkillCard skill={makeSkill({ securityStatus: 'unknown' })} onOpen={vi.fn()} />)
+
+    expect(screen.getByTestId('security-badge-unknown')).toHaveAttribute(
+      'title',
+      'No security audit data from the source — review the files before installing.',
+    )
+  })
 })

@@ -8,7 +8,8 @@ const STYLES: Record<InstallState, { icon: string; className: string }> = {
   },
   installable: {
     icon: 'download',
-    className: 'bg-[var(--color-primary-fixed)] text-[var(--color-brand)]',
+    // brand-on-neutral keeps AA contrast in all three themes (brand-on-primary-fixed is 1.3:1 in dark).
+    className: 'bg-[var(--color-surface-container)] text-[var(--color-brand)]',
   },
   'not-installable': {
     icon: 'block',

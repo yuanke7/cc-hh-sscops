@@ -12,7 +12,8 @@ const STYLES: Record<SecurityStatus, { icon: string; className: string }> = {
   },
   unknown: {
     icon: 'shield_question',
-    className: 'bg-[var(--color-surface-container-high)] text-[var(--color-text-tertiary)]',
+    // text-secondary: tertiary lands at ~3.3-3.9:1 on this container across themes — below AA for 10px text.
+    className: 'bg-[var(--color-surface-container-high)] text-[var(--color-text-secondary)]',
   },
   flagged: {
     icon: 'gpp_maybe',
@@ -26,6 +27,7 @@ export function SecurityBadge({ status, className = '' }: { status: SecurityStat
   return (
     <span
       data-testid={`security-badge-${status}`}
+      title={t(`market.securityHint.${status}`)}
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium whitespace-nowrap ${style.className} ${className}`}
     >
       <span className="material-symbols-outlined text-[12px]" aria-hidden>

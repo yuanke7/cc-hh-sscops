@@ -12,7 +12,7 @@ function FilterTrigger({ label, value, active }: { label: string; value: string;
     <span
       className={`inline-flex min-h-9 items-center gap-1.5 rounded-xl border px-3 text-xs transition-colors ${
         active
-          ? 'border-[var(--color-brand)] bg-[var(--color-primary-fixed)] text-[var(--color-brand)]'
+          ? 'border-[var(--color-brand)] bg-[var(--color-surface)] text-[var(--color-brand)]'
           : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-focus)]'
       }`}
     >

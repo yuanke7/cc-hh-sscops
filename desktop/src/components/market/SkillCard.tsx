@@ -2,6 +2,7 @@ import { useTranslation } from '../../i18n'
 import type { NormalizedSkill } from '../../types/market'
 import { InstallStateBadge } from './InstallStateBadge'
 import { SecurityBadge } from './SecurityBadge'
+import { SkillAvatar } from './SkillAvatar'
 
 function formatCount(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
@@ -24,12 +25,13 @@ export function SkillCard({
 }) {
   const t = useTranslation()
   const extraTags = Math.max(0, skill.tags.length - MAX_VISIBLE_TAGS)
+  const showInstallButton = Boolean(onInstall) && skill.installState === 'installable'
 
   return (
     <div
       data-testid={`market-skill-card-${skill.id}`}
-      className="group relative flex min-w-0 cursor-pointer flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-all hover:border-[var(--color-border-focus)] hover:shadow-[var(--shadow-button-primary)]"
-      style={{ contentVisibility: 'auto', containIntrinsicSize: '190px' }}
+      className="group relative flex min-w-0 cursor-pointer flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-focus)] hover:shadow-[var(--shadow-dropdown)]"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '196px' }}
       role="button"
       tabIndex={0}
       onClick={() => onOpen(skill.id)}
@@ -41,18 +43,7 @@ export function SkillCard({
       }}
     >
       <div className="flex items-start gap-3">
-        {skill.iconUrl ? (
-          <img
-            src={skill.iconUrl}
-            alt=""
-            loading="lazy"
-            className="h-9 w-9 flex-shrink-0 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-container)] object-cover"
-          />
-        ) : (
-          <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-container-high)] text-[var(--color-text-tertiary)]">
-            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
-          </span>
-        )}
+        <SkillAvatar skill={skill} size={40} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-sm font-semibold text-[var(--color-text-primary)]">{skill.name}</span>
@@ -62,11 +53,8 @@ export function SkillCard({
               </span>
             )}
           </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[var(--color-text-tertiary)]">
-            <span className="inline-flex items-center gap-1">
-              <span className="material-symbols-outlined text-[12px]" aria-hidden>
-                {skill.source === 'clawhub' ? 'public' : 'language'}
-              </span>
+          <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-[var(--color-text-tertiary)]">
+            <span className="flex-shrink-0 rounded-md bg-[var(--color-surface-container)] px-1.5 py-px font-medium text-[var(--color-text-secondary)]">
               {t(`market.source.${skill.source}`)}
             </span>
             {skill.author.handle && (
@@ -85,7 +73,7 @@ export function SkillCard({
           {skill.tags.slice(0, MAX_VISIBLE_TAGS).map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-text-tertiary)]"
+              className="rounded-full bg-[var(--color-surface-container)] px-2 py-0.5 text-[10px] text-[var(--color-text-secondary)]"
             >
               {tag}
             </span>
@@ -98,12 +86,15 @@ export function SkillCard({
         </div>
       )}
 
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 pt-3">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-[var(--color-border)]/60 pt-2.5">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           <SecurityBadge status={skill.securityStatus} />
-          <InstallStateBadge state={skill.installState} />
+          {/* The quick-install button already communicates "installable" — skip the badge when the button renders. */}
+          {!(skill.installState === 'installable' && showInstallButton) && (
+            <InstallStateBadge state={skill.installState} />
+          )}
         </div>
-        <div className="ml-auto flex flex-shrink-0 items-center gap-2 text-[11px] text-[var(--color-text-tertiary)]">
+        <div className="ml-auto flex flex-shrink-0 items-center gap-2 text-[11px] tabular-nums text-[var(--color-text-tertiary)]">
           <span className="inline-flex items-center gap-0.5" title={t('market.detail.downloads')}>
             <span className="material-symbols-outlined text-[13px]" aria-hidden>download</span>
             {formatCount(skill.stats.downloads)}
@@ -114,15 +105,15 @@ export function SkillCard({
               {formatCount(skill.stats.stars)}
             </span>
           )}
-          {onInstall && skill.installState === 'installable' && (
+          {showInstallButton && (
             <button
               type="button"
               disabled={installing}
               onClick={(e) => {
                 e.stopPropagation()
-                onInstall(skill.id)
+                onInstall?.(skill.id)
               }}
-              className="inline-flex min-h-7 items-center gap-1 rounded-lg bg-[var(--color-brand)] px-2.5 text-[11px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="inline-flex min-h-7 cursor-pointer items-center gap-1 rounded-lg bg-[var(--color-brand)] px-2.5 text-[11px] font-medium text-[var(--color-on-primary)] transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {installing ? (
                 <span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" aria-hidden />

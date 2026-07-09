@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from '../../i18n'
 import { useMarketStore } from '../../stores/marketStore'
 import { FilterBar } from './FilterBar'
+import { MarketDisclaimer } from './MarketDisclaimer'
 import { SkillCard } from './SkillCard'
 import { SourceStatusBar } from './SourceStatusBar'
 
@@ -35,7 +36,8 @@ export function MarketHome({ onRequestInstall }: { onRequestInstall: (id: string
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 py-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-6">
+        <MarketDisclaimer />
         <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-container-low)] px-5 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
