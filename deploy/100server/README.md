@@ -47,6 +47,13 @@ docker compose logs --tail=100 server feishu
 curl --fail http://127.0.0.1:3456/health
 ```
 
+若服务器无法访问 Docker Hub，可上传本地构建产物到 `offline/`，复用服务器已有基础镜像：
+
+```bash
+docker build -f Dockerfile.offline -t cc-hh-sscops:local ../..
+docker compose up -d --no-build
+```
+
 在本机建立 SSH 隧道后访问 Web：
 
 ```bash
