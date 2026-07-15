@@ -1,0 +1,13 @@
+.git
+.github
+.idea
+.vscode
+node_modules
+**/node_modules
+dist
+coverage
+artifacts
+desktop/src-tauri/target
+desktop/src-tauri/binaries
+deploy/100server/*.env
+deploy/100server/state
